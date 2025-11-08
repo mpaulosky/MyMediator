@@ -1,12 +1,12 @@
-﻿// =======================================================
+// =======================================================
 // Copyright (c) 2025. All rights reserved.
-// File Name :     IRequest.cs
+// File Name :     GlobalUsings.cs
 // Company :       mpaulosky
 // Author :        Matthew
 // Solution Name : TailwindBlog
-// Project Name :  MyMediator
+// Project Name :  MyMediator.Tests
 // =======================================================
 
-namespace MyMediator;
+global using FluentAssertions;
 
-public interface IRequest<TResponse>;
+global using NSubstitute;
