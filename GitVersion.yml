@@ -1,0 +1,36 @@
+mode: ContinuousDeployment
+branches:
+  main:
+    regex: ^main$
+    tag: ''
+    increment: Minor
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    is-mainline: true
+  develop:
+    regex: ^dev(elop)?(ment)?$
+    tag: beta
+    increment: Minor
+    prevent-increment-of-merged-branch-version: false
+    track-merge-target: true
+  feature:
+    regex: ^features?[/-]
+    tag: alpha
+    increment: Minor
+  pull-request:
+    regex: ^(pull|pull\-requests|pr)[/-]
+    tag: PullRequest
+    increment: Inherit
+    tag-number-pattern: '[/-](?<number>\d+)'
+  hotfix:
+    regex: ^hotfix(es)?[/-]
+    tag: beta
+    increment: Patch
+  release:
+    regex: ^releases?[/-]
+    tag: rc
+    increment: None
+    prevent-increment-of-merged-branch-version: true
+ignore:
+  sha: []
+merge-message-formats: {}

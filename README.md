@@ -1,26 +1,100 @@
-# TailwindBlog Application
+# MyMediator
 
-## New Aspire and BlazorServer Hosted Application
+## A Lightweight Mediator Implementation for .NET
 
-### A tool to Create and Manage Blog Posts using a MongoDb to store documents. It includes both unit and integration tests with the integration tests using a docker container for the test MongoDb database to ensure clean isolated data for the tests
+A simple, efficient mediator pattern implementation for .NET applications that supports request/response workflows with dependency injection.
 
 ****
-![GitHub](https://img.shields.io/github/license/mpaulosky/TailwindBlog?logo=github)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/mpaulosky/TailwindBlog?logo=github)
+![GitHub](https://img.shields.io/github/license/mpaulosky/MyMediator?logo=github)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/mpaulosky/MyMediator?logo=github)
+[![NuGet](https://img.shields.io/nuget/v/MyMediator.svg)](https://www.nuget.org/packages/MyMediator/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/MyMediator.svg)](https://www.nuget.org/packages/MyMediator/)
 ****
-[![Open Issues](https://img.shields.io/github/issues/mpaulosky/TailwindBlog.svg?style=flatsquare&logo=github&label=Open%20Issues)](https://github.com/mpaulosky/TailwindBlog/issues)
-[![Closed Issues](https://img.shields.io/github/issues-closed/mpaulosky/TailwindBlog.svg?style=flatsquare&logo=github&label=Closed%20Issues)](https://github.com/mpaulosky/TailwindBlog/issues?q=sort%3Aupdated-desc+is%3Aissue+is%3Aclosed)
-[![Open Bug Issues](https://img.shields.io/github/issues/mpaulosky/TailwindBlog/bug.svg?style=flatsquare&logo=github&label=Open%20Bug%20Issues)](https://github.com/mpaulosky/TailwindBlog/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
-[![Closed Bug Issues](https://img.shields.io/github/issues-closed/mpaulosky/TailwindBlog/bug.svg?style=flatsquare&logo=github&label=Closed%20Bug%20Issues)](https://github.com/mpaulosky/TailwindBlog/issues?q=is%3Aissue+is%3Aclosed+label%3Abug)
+[![Open Issues](https://img.shields.io/github/issues/mpaulosky/MyMediator.svg?style=flatsquare&logo=github&label=Open%20Issues)](https://github.com/mpaulosky/MyMediator/issues)
+[![Closed Issues](https://img.shields.io/github/issues-closed/mpaulosky/MyMediator.svg?style=flatsquare&logo=github&label=Closed%20Issues)](https://github.com/mpaulosky/MyMediator/issues?q=sort%3Aupdated-desc+is%3Aissue+is%3Aclosed)
 ****
-![GitHub pull requests](https://img.shields.io/github/issues-pr/mpaulosky/TailwindBlog?label=pull%20requests&logo=github)
-![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/mpaulosky/TailwindBlog?logo=github)
-![GitHub last commit (branch)](https://img.shields.io/github/last-commit/mpaulosky/TailwindBlog/main?label=last%20commit%20main&logo=github)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/mpaulosky/MyMediator?label=pull%20requests&logo=github)
+![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/mpaulosky/MyMediator?logo=github)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/mpaulosky/MyMediator/main?label=last%20commit%20main&logo=github)
 ****
-[![.NET Build](https://github.com/mpaulosky/TailwindBlog/actions/workflows/dotnet-build.yml/badge.svg)](https://github.com/mpaulosky/TailwindBlog/actions/workflows/dotnet-build.yml)
-[![Deploy GitHub Pages](https://github.com/mpaulosky/TailwindBlog/actions/workflows/deploy-jekyll-gh-pages.yml/badge.svg)](https://github.com/mpaulosky/TailwindBlog/actions/workflows/deploy-jekyll-gh-pages.yml)
-[![CodeCov Main](https://codecov.io/gh/mpaulosky/TailwindBlog/branch/main/graph/badge.svg)](https://codecov.io/gh/mpaulosky/TailwindBlog)
+[![.NET Build](https://github.com/mpaulosky/MyMediator/actions/workflows/dotnet.yml/badge.svg)](https://github.com/mpaulosky/MyMediator/actions/workflows/dotnet.yml)
+[![Publish NuGet](https://github.com/mpaulosky/MyMediator/actions/workflows/nuget-publish.yml/badge.svg)](https://github.com/mpaulosky/MyMediator/actions/workflows/nuget-publish.yml)
 ****
+
+## Installation
+
+### From NuGet.org
+
+```bash
+dotnet add package MyMediator
+```
+
+### From GitHub Packages
+
+See [NuGet Documentation](./docs/NUGET.md) for details on using GitHub Packages.
+
+## Features
+
+- Simple request/response pattern
+- Dependency injection integration
+- Lightweight with minimal dependencies
+- Supports async operations
+- Easy to test and mock
+
+## Usage
+
+### 1. Define a Request
+
+```csharp
+public record GetUserQuery(int UserId) : IRequest<User>;
+```
+
+### 2. Create a Handler
+
+```csharp
+public class GetUserQueryHandler : IRequestHandler<GetUserQuery, User>
+{
+    private readonly IUserRepository _repository;
+    
+    public GetUserQueryHandler(IUserRepository repository)
+    {
+        _repository = repository;
+    }
+    
+    public async Task<User> Handle(GetUserQuery request, CancellationToken cancellationToken)
+    {
+        return await _repository.GetByIdAsync(request.UserId, cancellationToken);
+    }
+}
+```
+
+### 3. Register Services
+
+```csharp
+services.AddMyMediator();
+services.AddTransient<IRequestHandler<GetUserQuery, User>, GetUserQueryHandler>();
+```
+
+### 4. Send Requests
+
+```csharp
+public class UserController : ControllerBase
+{
+    private readonly ISender _sender;
+    
+    public UserController(ISender sender)
+    {
+        _sender = sender;
+    }
+    
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUser(int id)
+    {
+        var user = await _sender.Send(new GetUserQuery(id));
+        return Ok(user);
+    }
+}
+```
 
 ## How to Engage, Contribute, and Give Feedback
 
@@ -34,14 +108,9 @@ Check out the [contributing page](./docs/CONTRIBUTING.md) to see the best places
 
 ## Software References
 
-* .NET 9
-* .NET Aspire 9.2
+* .NET 10 (Preview)
 * C#
-* HTML
-* TailwindCSS
-* Blazor Server
-* MongoDb
-* Auth0
+* Microsoft.Extensions.DependencyInjection
 
 ## Code of conduct
 
