@@ -28,7 +28,8 @@ All commit messages **must** follow this structure:
 
 ### Scope
 
-The scope should be the name of the affected project, folder, or feature (e.g., `Web`, `Mongo`, `ServiceDefaults`, `docs`).
+The scope should be the name of the affected project, folder, or feature (e.g., `Web`, `Mongo`, `ServiceDefaults`,
+`docs`).
 
 ### Short Summary
 
@@ -65,7 +66,7 @@ docs(CONTRIBUTING): update testing section for Playwright
 Adds Playwright usage instructions and links to documentation.
 ```
 
-## Additional Guidelines
+## Additional ObjectIdelines
 
 - Group related changes in a single commit.
 - Separate unrelated changes into different commits.
