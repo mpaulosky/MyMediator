@@ -1,0 +1,119 @@
+name: Build and Publish NuGet Package
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.gitignore"
+      - "**/*.gitattributes"
+      - "docs/**"
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.gitignore"
+      - "**/*.gitattributes"
+      - "docs/**"
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "The reason for running the workflow"
+        required: true
+        default: "Manual run"
+
+env:
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-and-pack:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v4.0.0
+        with:
+          versionSpec: "6.0"
+
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v4.0.0
+
+      - name: Display GitVersion outputs
+        run: |
+          echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
+          echo "MajorMinorPatch: ${{ steps.gitversion.outputs.majorMinorPatch }}"
+          echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
+          echo "PreReleaseTag: ${{ steps.gitversion.outputs.preReleaseTag }}"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release /p:Version=${{ steps.gitversion.outputs.fullSemVer }}
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: Pack NuGet package
+        run: dotnet pack src/MyMediator/MyMediator.csproj --no-build --configuration Release --output ./artifacts /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+
+      - name: Upload NuGet package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts/*.nupkg
+
+      - name: Upload symbol package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: symbol-packages
+          path: ./artifacts/*.snupkg
+
+      - name: Publish to GitHub Packages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: dotnet nuget push ./artifacts/*.nupkg --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.gitversion.outputs.preReleaseTag == ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.gitversion.outputs.majorMinorPatch }}
+          name: Release v${{ steps.gitversion.outputs.majorMinorPatch }}
+          body: |
+            ## MyMediator v${{ steps.gitversion.outputs.majorMinorPatch }}
+            
+            ### Installation
+            ```bash
+            dotnet add package MyMediator --version ${{ steps.gitversion.outputs.majorMinorPatch }}
+            ```
+            
+            ### NuGet Package
+            This release is available on GitHub Packages.
+            
+            ### Changes
+            See commit history for details.
+          files: |
+            ./artifacts/*.nupkg
+            ./artifacts/*.snupkg
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

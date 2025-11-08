@@ -4,11 +4,38 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		
+		<!-- NuGet Package Metadata -->
+		<PackageId>MyMediator</PackageId>
+		<Authors>mpaulosky</Authors>
+		<Company>mpaulosky</Company>
+		<Product>MyMediator</Product>
+		<Description>A lightweight mediator pattern implementation for .NET applications. MyMediator provides a simple and efficient way to implement request/response patterns with dependency injection support.</Description>
+		<PackageTags>mediator;cqrs;request-response;dotnet;dependency-injection</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/mpaulosky/MyMediator</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/mpaulosky/MyMediator.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<Copyright>Copyright (c) 2025 mpaulosky</Copyright>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<IsPackable>true</IsPackable>
+		
+		<!-- Source Link and Debugging -->
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
 	</ItemGroup>
 
 </Project>
