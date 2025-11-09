@@ -40,6 +40,7 @@ branches:
     regex: ^hotfix(es)?[/-]
     mode: ContinuousDeployment
     increment: Patch
+    tag: beta
     prevent-increment-of-merged-branch-version: false
     track-merge-target: false
     tracks-release-branches: false
