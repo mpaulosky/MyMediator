@@ -48,13 +48,29 @@ jobs:
           global-json-file: global.json
 
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v4.0.0
+        uses: gittools/actions/gitversion/setup@v4.2.0
         with:
-          versionSpec: "6.11.10"
+          versionSpec: "6.4.x"
 
       - name: Determine Version
         id: gitversion
-        uses: gittools/actions/gitversion/execute@v4.0.0
+        uses: gittools/actions/gitversion/execute@v4.2.0
+
+      - name: Debug GitVersion Outputs
+        run: |
+          echo "semVer: ${{ steps.gitversion.outputs.semVer }}"
+          echo "fullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
+          echo "majorMinorPatch: ${{ steps.gitversion.outputs.majorMinorPatch }}"
+          echo "branchName: ${{ steps.gitversion.outputs.branchName }}"
+          echo "sha: ${{ steps.gitversion.outputs.sha }}"
+          echo "shortSha: ${{ steps.gitversion.outputs.shortSha }}"
+          echo "commitDate: ${{ steps.gitversion.outputs.commitDate }}"
+          echo "informationalVersion: ${{ steps.gitversion.outputs.informationalVersion }}"
+          echo "assemblySemVer: ${{ steps.gitversion.outputs.assemblySemVer }}"
+          echo "assemblySemFileVer: ${{ steps.gitversion.outputs.assemblySemFileVer }}"
+
+      - name: Use Version
+        run: echo "Version is ${{ steps.gitversion.outputs.semVer }}"
 
       - name: Display GitVersion outputs
         run: |
