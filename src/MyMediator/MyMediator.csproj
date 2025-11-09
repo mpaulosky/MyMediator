@@ -20,7 +20,6 @@
 		<Copyright>Copyright (c) 2025 mpaulosky</Copyright>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<IsPackable>true</IsPackable>
-    	<PackageVersion>$(GitVersion_NuGetVersion ?? 0.0.1)</PackageVersion>
 		
 		<!-- Source Link and Debugging -->
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -28,7 +27,12 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
-
+	<PropertyGroup>
+	  <Version>$(GitVersion_NuGetVersion)</Version>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(GitVersion_NuGetVersion)' == ''">
+	  <Version>0.0.1</Version>
+	</PropertyGroup>
 	<ItemGroup>
 		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
