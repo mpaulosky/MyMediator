@@ -91,7 +91,7 @@ jobs:
       #- name: Pack NuGet package
       #  run: dotnet pack src/MyMediator/MyMediator.csproj --no-build --configuration Release --output ./artifacts /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
       - name: Pack NuGet package
-        run: dotnet pack src/MyMediator/MyMediator.csproj -c Release /p:PackageVersion=${github.run_number}
+        run: dotnet pack src/MyMediator/MyMediator.csproj -c Release /p:PackageVersion=${{ steps.gitversion.outputs.fullSemVer }}
         
       - name: Upload NuGet package artifacts
         uses: actions/upload-artifact@v4
