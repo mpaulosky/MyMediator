@@ -81,7 +81,10 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
-
+        
+      - name: Ensure artifacts directory exists
+        run: mkdir -p /home/runner/work/MyMediator/MyMediator/artifacts
+        
       - name: Build
         run: dotnet build --no-restore --configuration Release /p:Version=${{ steps.gitversion.outputs.fullSemVer }}
 
