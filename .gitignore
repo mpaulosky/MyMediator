@@ -5,4 +5,7 @@ riderModule.iml
 /_ReSharper.Caches/
 /.vs/
 /.idea/
+test-artifacts/
 artifacts/
+*.nupkg
+*.snupkg

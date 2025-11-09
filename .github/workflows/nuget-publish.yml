@@ -1,27 +1,44 @@
-name: Publish NuGet Package
+name: Build and Publish NuGet Package
 
 on:
   push:
     branches:
       - main
-    tags:
-      - "v*.*.*"
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.gitignore"
+      - "**/*.gitattributes"
+      - "docs/**"
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.gitignore"
+      - "**/*.gitattributes"
+      - "docs/**"
   workflow_dispatch:
     inputs:
-      version:
-        description: "Version to publish (e.g., 1.0.0)"
-        required: false
-        type: string
+      reason:
+        description: "The reason for running the workflow"
+        required: true
+        default: "Manual run"
+
+env:
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
-  build-and-publish:
+  build-and-pack:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -55,94 +72,64 @@ jobs:
       - name: Use Version
         run: echo "Version is ${{ steps.gitversion.outputs.semVer }}"
 
-      - name: Set Version
-        id: version
+      - name: Display GitVersion outputs
         run: |
-          if [ -n "${{ inputs.version }}" ]; then
-            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${{ steps.gitversion.outputs.semVer }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Display Version
-        run: |
-          echo "Building version: ${{ steps.version.outputs.version }}"
+          echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
+          echo "MajorMinorPatch: ${{ steps.gitversion.outputs.majorMinorPatch }}"
+          echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
+          echo "PreReleaseTag: ${{ steps.gitversion.outputs.preReleaseTag }}"
 
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore /p:Version=${{ steps.version.outputs.version }}
+        run: dotnet build --no-restore --configuration Release /p:Version=${{ steps.gitversion.outputs.fullSemVer }}
 
-      - name: Check for test projects
-        id: check-tests
-        run: |
-          # Find all test projects recursively in tests folder only
-          test_projects=""
-          while IFS= read -r proj; do
-            if grep -q "<IsTestProject>true</IsTestProject>" "$proj" 2>/dev/null; then
-              test_projects="$test_projects $proj"
-            fi
-          done < <( find tests -type f -name "*.csproj" 2>/dev/null || true )
+      - name: Test
+        run: dotnet test --no-build --configuration Release --verbosity normal
 
-          if [ -z "$test_projects" ]; then
-            echo "No test projects found in tests folder"
-            echo "has_tests=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "Found test projects: $test_projects"
-            echo "has_tests=true" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Pack NuGet package
+        run: dotnet pack src/MyMediator/MyMediator.csproj --no-build --configuration Release --output ./artifacts /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
 
-      - name: Run all tests in all test projects
-        id: run-tests
-        if: steps.check-tests.outputs.has_tests == 'true'
-        run: |
-          # Ensure repository-level test-results exists
-          mkdir -p "test-results"
-          timestamp=$(date +%s)
+      - name: Upload NuGet package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts/*.nupkg
 
-          set -o pipefail
-
-          overall_rc=0
-
-          # Find all test projects recursively in tests folder only
-          while IFS= read -r proj; do
-            if grep -q "<IsTestProject>true</IsTestProject>" "$proj" 2>/dev/null; then
-              name=$(basename "$proj" .csproj)
-              echo "Running tests for: $proj -> test-results/${name}.trx (logs -> test-results/${name}.log)"
-              set +e
-              dotnet test "$proj" \
-                --configuration Release \
-                --no-build --no-restore \
-                --collect:"XPlat Code Coverage" \
-                --logger "trx;LogFileName=${name}.trx" \
-                --results-directory "test-results" 2>&1 | tee "test-results/${name}.log"
-              rc=$?
-              set -e
-
-              if [ "$rc" -ne 0 ]; then
-                echo "dotnet test failed for $proj (exit code $rc)"
-                overall_rc=$rc
-              fi
-            else
-              echo "Skipping non-test project: $proj"
-            fi
-            done < <( find tests -type f -name "*.csproj" 2>/dev/null || true )
-
-            echo "tests_exit_code=$overall_rc" >> "$GITHUB_OUTPUT"
-            exit 0
-
-      - name: Pack
-        run: dotnet pack src/MyMediator/MyMediator.csproj --configuration Release --no-build --output ./artifacts /p:PackageVersion=${{ steps.version.outputs.version }}
+      - name: Upload symbol package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: symbol-packages
+          path: ./artifacts/*.snupkg
 
       - name: Publish to GitHub Packages
-        run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --skip-duplicate
-#      - name: Publish to NuGet.org
-#        if: startsWith(github.ref, 'refs/tags/')
-#        run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: dotnet nuget push ./artifacts/*.nupkg --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
 
-#      - name: Upload NuGet Package Artifact
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: nuget-package
-#          path: ./artifacts/*.nupk#gg
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.gitversion.outputs.preReleaseTag == ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.gitversion.outputs.majorMinorPatch }}
+          name: Release v${{ steps.gitversion.outputs.majorMinorPatch }}
+          body: |
+            ## MyMediator v${{ steps.gitversion.outputs.majorMinorPatch }}
+            
+            ### Installation
+            ```bash
+            dotnet add package MyMediator --version ${{ steps.gitversion.outputs.majorMinorPatch }}
+            ```
+            
+            ### NuGet Package
+            This release is available on GitHub Packages.
+            
+            ### Changes
+            See commit history for details.
+          files: |
+            ./artifacts/*.nupkg
+            ./artifacts/*.snupkg
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

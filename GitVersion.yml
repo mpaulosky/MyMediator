@@ -2,35 +2,71 @@ mode: ContinuousDeployment
 branches:
   main:
     regex: ^main$
+    mode: ContinuousDeployment
     tag: ''
-    increment: Minor
+    increment: Patch
     prevent-increment-of-merged-branch-version: true
     track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: true
     is-mainline: true
   develop:
     regex: ^dev(elop)?(ment)?$
-    tag: beta
+    mode: ContinuousDeployment
+    tag: alpha
     increment: Minor
     prevent-increment-of-merged-branch-version: false
     track-merge-target: true
+    tracks-release-branches: true
+    is-release-branch: false
+    is-mainline: false
   feature:
     regex: ^features?[/-]
-    tag: alpha
-    increment: Minor
-  pull-request:
-    regex: ^(pull|pull\-requests|pr)[/-]
-    tag: PullRequest
+    mode: ContinuousDeployment
+    tag: useBranchName
     increment: Inherit
-    tag-number-pattern: '[/-](?<number>\d+)'
-  hotfix:
-    regex: ^hotfix(es)?[/-]
-    tag: beta
-    increment: Patch
+    prevent-increment-of-merged-branch-version: false
+    track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: false
+    is-mainline: false
   release:
     regex: ^releases?[/-]
-    tag: rc
+    mode: ContinuousDeployment
+    tag: beta
     increment: None
     prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: true
+    is-mainline: false
+  hotfix:
+    regex: ^hotfix(es)?[/-]
+    mode: ContinuousDeployment
+    tag: beta
+    increment: Patch
+    prevent-increment-of-merged-branch-version: false
+    track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: false
+    is-mainline: false
+  pull-request:
+    regex: ^(pull|pull\-requests|pr)[/-]
+    mode: ContinuousDeployment
+    tag: PullRequest
+    increment: Inherit
+    prevent-increment-of-merged-branch-version: false
+    tag-number-pattern: '[/-](?<number>\d+)[-/]'
+    track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: false
+    is-mainline: false
 ignore:
   sha: []
 merge-message-formats: {}
+major-version-bump-message: '\+semver:\s?(breaking|major)'
+minor-version-bump-message: '\+semver:\s?(feature|minor)'
+patch-version-bump-message: '\+semver:\s?(fix|patch)'
+no-bump-message: '\+semver:\s?(none|skip)'
+tag-prefix: '[vV]'
+version-in-branch-name: '[vV]?(?<version>[0-9]+(?:\.[0-9]+)?)'
