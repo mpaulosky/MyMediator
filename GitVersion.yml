@@ -39,7 +39,6 @@ branches:
     regex: ^(pull|pull\-requests|pr)[/-]
     mode: ContinuousDeployment
     increment: Inherit
-    tag-number-pattern: '[/-](?<number>\d+)[-/]'
     track-merge-target: false
     tracks-release-branches: false
     is-release-branch: false
