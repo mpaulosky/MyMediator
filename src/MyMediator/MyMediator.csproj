@@ -20,6 +20,7 @@
 		<Copyright>Copyright (c) 2025 mpaulosky</Copyright>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<IsPackable>true</IsPackable>
+		<PackageVersion>0.0.1</PackageVersion>
 		
 		<!-- Source Link and Debugging -->
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
