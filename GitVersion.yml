@@ -28,7 +28,6 @@ branches:
     track-merge-target: false
     tracks-release-branches: false
     is-release-branch: true
-    is-mainline: false
   hotfix:
     regex: ^hotfix(es)?[/-]
     mode: ContinuousDeployment
