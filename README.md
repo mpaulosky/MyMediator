@@ -5,10 +5,8 @@
 A simple, efficient mediator pattern implementation for .NET applications that supports request/response workflows with dependency injection.
 
 ****
-![GitHub](https://img.shields.io/github/license/mpaulosky/MyMediator?logo=github)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/mpaulosky/MyMediator?logo=github)
-[![NuGet](https://img.shields.io/nuget/v/MyMediator.svg)](https://www.nuget.org/packages/MyMediator/)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/MyMediator.svg)](https://www.nuget.org/packages/MyMediator/)
+![GitHub](https://img.shields.io/github/license/mpaulosky/MyMediator?logo=GitHub)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/mpaulosky/MyMediator?logo=Github)
 ****
 [![Open Issues](https://img.shields.io/github/issues/mpaulosky/MyMediator.svg?style=flatsquare&logo=github&label=Open%20Issues)](https://github.com/mpaulosky/MyMediator/issues)
 [![Closed Issues](https://img.shields.io/github/issues-closed/mpaulosky/MyMediator.svg?style=flatsquare&logo=github&label=Closed%20Issues)](https://github.com/mpaulosky/MyMediator/issues?q=sort%3Aupdated-desc+is%3Aissue+is%3Aclosed)
