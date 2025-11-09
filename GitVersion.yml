@@ -3,7 +3,6 @@ branches:
   main:
     regex: ^main$
     mode: ContinuousDeployment
-    tag: ''
     increment: Patch
     track-merge-target: false
     tracks-release-branches: false
@@ -12,7 +11,6 @@ branches:
   develop:
     regex: ^dev(elop)?(ment)?$
     mode: ContinuousDeployment
-    tag: alpha
     increment: Minor
     track-merge-target: true
     tracks-release-branches: true
@@ -21,7 +19,6 @@ branches:
   feature:
     regex: ^features?[/-]
     mode: ContinuousDeployment
-    tag: useBranchName
     increment: Inherit
     track-merge-target: false
     tracks-release-branches: false
@@ -30,7 +27,6 @@ branches:
   release:
     regex: ^releases?[/-]
     mode: ContinuousDeployment
-    tag: beta
     increment: None
     track-merge-target: false
     tracks-release-branches: false
@@ -39,7 +35,6 @@ branches:
   hotfix:
     regex: ^hotfix(es)?[/-]
     mode: ContinuousDeployment
-    tag: beta
     increment: Patch
     track-merge-target: false
     tracks-release-branches: false
@@ -48,7 +43,6 @@ branches:
   pull-request:
     regex: ^(pull|pull\-requests|pr)[/-]
     mode: ContinuousDeployment
-    tag: PullRequest
     increment: Inherit
     tag-number-pattern: '[/-](?<number>\d+)[-/]'
     track-merge-target: false
